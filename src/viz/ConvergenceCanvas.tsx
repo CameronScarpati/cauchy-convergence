@@ -230,6 +230,7 @@ export function ConvergenceCanvas({
       const hue = cfg.distribution === 'cauchy' ? view.palette.cauchy : view.palette.normal
       for (let i = sim.runs.length - 1; i >= 0; i--) {
         const run = sim.runs[i]
+        if (!run) continue
         const alpha = i === 0 ? 1 : 0.3
         drawTrace(view.fg, view.layout, view.x, view.y, run.meanTrace, sim.count, {
           color: hue,
@@ -264,17 +265,18 @@ export function ConvergenceCanvas({
       for (let s = 0; s < steps; s++) {
         for (let i = 0; i < sim.runs.length; i++) {
           const run = sim.runs[i]
+          if (!run) continue
           const value =
             cfg.distribution === 'cauchy'
               ? cauchySample(run.rng, cfg.location, cfg.scale)
               : normalSample(run.rng, cfg.location, cfg.scale)
           meanPush(run.meanAcc, value)
           medianPush(run.medianAcc, value)
-          run.meanTrace[sim.count] = mean(run.meanAcc)
+          const meanNow = mean(run.meanAcc)
+          run.meanTrace[sim.count] = meanNow
           run.medianTrace[sim.count] = median(run.medianAcc)
           run.lastValue = value
           if (i === 0 && view) {
-            const meanNow = run.meanTrace[sim.count]
             const runaway = isOffScale(view.y, value)
               ? value
               : isOffScale(view.y, meanNow)
@@ -301,8 +303,8 @@ export function ConvergenceCanvas({
       const cfg = configRef.current
       emit({
         n: sim.count,
-        mean: sim.count > 0 ? primary.meanTrace[sim.count - 1] : NaN,
-        median: sim.count > 0 ? primary.medianTrace[sim.count - 1] : NaN,
+        mean: mean(primary.meanAcc),
+        median: median(primary.medianAcc),
         lastValue: primary.lastValue,
         offScaleCount: primary.offScaleCount,
         done: sim.count >= cfg.maxSamples,
