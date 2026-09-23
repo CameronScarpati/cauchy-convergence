@@ -50,11 +50,11 @@ export function median(state: RunningMedian): number {
     : (heapPeek(state.upper) as number)
 }
 
-/* (a + b) / 2 overflows to Infinity when both middle values sit near the
-   top of the double range. Only values that large can overflow the sum,
-   and halving them is exact, so the fallback still rounds the true
-   midpoint once. Infinite inputs keep the plain sum, which already gives
-   the IEEE answer. */
+/* (a + b) / 2 overflows to an infinity when both middle values have the
+   same sign and sit near the edge of the double range. Only values that
+   large can overflow the sum, and halving them is exact, so the fallback
+   still rounds the true midpoint once. Infinite inputs keep the plain
+   sum, which already gives the IEEE answer. */
 function midpoint(a: number, b: number): number {
   const sum = a + b
   const overflowed = !Number.isFinite(sum) && Number.isFinite(a) && Number.isFinite(b)
