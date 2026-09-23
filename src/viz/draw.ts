@@ -315,7 +315,9 @@ export function drawOffScaleMarkers(
   if (events.length === 0) return
   const area = plotArea(layout)
   const [d0, d1] = yScale.domain()
-  if (d0 === undefined || d1 === undefined) return
+  if (d0 === undefined || d1 === undefined) {
+    throw new Error('Scale domain needs two endpoints to test a value against')
+  }
   const top = Math.max(d0, d1)
   ctx.save()
   ctx.font = style.font
