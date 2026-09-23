@@ -5,16 +5,25 @@ import { createHeap, heapPeek, heapPop, heapPush, heapSize, type Heap } from './
 export interface RunningMedian {
   lower: Heap
   upper: Heap
+  /* Set once a NaN is pushed. The median of a sample containing NaN is
+     NaN from then on, the same way the running mean propagates it, and
+     the heaps never see the value because they cannot order it. */
+  sawNaN: boolean
 }
 
 export function createRunningMedian(): RunningMedian {
   return {
     lower: createHeap((a, b) => b - a),
     upper: createHeap((a, b) => a - b),
+    sawNaN: false,
   }
 }
 
 export function medianPush(state: RunningMedian, value: number): void {
+  if (Number.isNaN(value)) {
+    state.sawNaN = true
+    return
+  }
   const lowerTop = heapPeek(state.lower)
   if (lowerTop === undefined || value <= lowerTop) {
     heapPush(state.lower, value)
@@ -29,6 +38,7 @@ export function medianPush(state: RunningMedian, value: number): void {
 }
 
 export function median(state: RunningMedian): number {
+  if (state.sawNaN) return NaN
   const lowerCount = heapSize(state.lower)
   const upperCount = heapSize(state.upper)
   if (lowerCount + upperCount === 0) return NaN

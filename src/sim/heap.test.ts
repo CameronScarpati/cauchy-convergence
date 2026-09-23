@@ -46,9 +46,20 @@ describe('binary heap', () => {
     expect(() => heapPop(popped)).toThrow('Heap slot 1 of 3 is empty')
   })
 
+  it('rejects NaN without changing the heap', () => {
+    const heap = createHeap((a, b) => a - b)
+    for (const v of [5, 1, 3]) heapPush(heap, v)
+    expect(() => heapPush(heap, NaN)).toThrow(RangeError)
+    expect(heap.items).toEqual([1, 5, 3])
+    const popped: number[] = []
+    for (let v = heapPop(heap); v !== undefined; v = heapPop(heap)) popped.push(v)
+    expect(popped).toEqual([1, 3, 5])
+  })
+
   it('agrees with a sorted-array model on arbitrary push and pop sequences', () => {
     // null is a pop. === lets the tied zeros -0 and +0 come out in either order.
-    const value = fc.oneof(fc.double({ noNaN: true }), fc.constantFrom(-0, 0, Infinity, -Infinity))
+    // NaN pushes must throw and leave both the heap and the model unchanged.
+    const value = fc.oneof(fc.double(), fc.constantFrom(-0, 0, Infinity, -Infinity, NaN))
     const ops = fc.array(fc.option(value, { nil: null, freq: 3 }), { maxLength: 100, size: 'max' })
     fc.assert(
       fc.property(ops, (sequence) => {
@@ -57,6 +68,8 @@ describe('binary heap', () => {
         for (const op of sequence) {
           if (op === null) {
             expect(heapPop(heap) === model.shift()).toBe(true)
+          } else if (Number.isNaN(op)) {
+            expect(() => heapPush(heap, op)).toThrow(RangeError)
           } else {
             heapPush(heap, op)
             model.push(op)

@@ -20,6 +20,7 @@ function bruteMidpoint(a: number, b: number): number {
 }
 
 function bruteMedian(values: number[]): number {
+  if (values.some(Number.isNaN)) return NaN
   const sorted = [...values].sort((a, b) => a - b)
   const mid = sorted.length >> 1
   return sorted.length % 2 === 1 ? sorted[mid]! : bruteMidpoint(sorted[mid - 1]!, sorted[mid]!)
@@ -80,9 +81,30 @@ describe('running median', () => {
     }
   })
 
+  it('becomes NaN once a NaN is pushed, wherever it arrives, and stays NaN', () => {
+    for (const values of [
+      [NaN, 1, 2, 3, 4],
+      [1, 2, 3, 4, NaN],
+      [4, NaN, 1, 3, 2],
+    ]) {
+      const state = createRunningMedian()
+      for (const value of values) medianPush(state, value)
+      expect(median(state)).toBeNaN()
+      medianPush(state, 5)
+      medianPush(state, 6)
+      expect(median(state)).toBeNaN()
+    }
+  })
+
   it('matches brute-force sorting on arbitrary doubles, signed zeros and infinities', () => {
     const edge = fc.constantFrom(-0, 0, Infinity, -Infinity, Number.MAX_VALUE, -Number.MIN_VALUE)
-    const sample = fc.oneof(fc.double({ noNaN: true }), edge)
+    // NaN is kept rare so most sequences check the ordering for a while
+    // before it arrives and turns every later median into NaN.
+    const sample = fc.oneof(
+      { arbitrary: fc.double(), weight: 20 },
+      { arbitrary: edge, weight: 20 },
+      { arbitrary: fc.constant(NaN), weight: 1 },
+    )
     fc.assert(
       fc.property(fc.array(sample, { maxLength: 60, size: 'max' }), (sequence) => {
         const state = createRunningMedian()
@@ -116,6 +138,14 @@ describe('running mean', () => {
       sum += value
       expect(mean(state)).toBeCloseTo(sum / i, 6)
     }
+  })
+
+  it('becomes NaN once a NaN is pushed and stays NaN', () => {
+    const state = createRunningMean()
+    meanPush(state, 1)
+    meanPush(state, NaN)
+    meanPush(state, 3)
+    expect(mean(state)).toBeNaN()
   })
 
   it('survives values whose raw sum would overflow', () => {

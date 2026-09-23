@@ -18,6 +18,11 @@ export function heapPeek(heap: Heap): number | undefined {
 }
 
 export function heapPush(heap: Heap, value: number): void {
+  /* NaN has no place in a numeric order: a - b style comparators return
+     NaN for it, which the sift-up loop reads as smaller and the sift-down
+     loop as not smaller, so entries around it land out of order. Reject
+     it before touching the array. */
+  if (Number.isNaN(value)) throw new RangeError('Heap cannot order NaN')
   const { items, compare } = heap
   items.push(value)
   let i = items.length - 1
