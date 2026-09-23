@@ -175,7 +175,9 @@ export function drawNormalBand(
     else ctx.lineTo(x, y)
   })
   for (let i = ns.length - 1; i >= 0; i--) {
-    ctx.lineTo(xScale(ns[i]), yScale(location - half(ns[i])))
+    const n = ns[i]
+    if (n === undefined) continue
+    ctx.lineTo(xScale(n), yScale(location - half(n)))
   }
   ctx.closePath()
   ctx.globalAlpha = 0.08
@@ -251,9 +253,11 @@ function decimatedPath(
   values: Float64Array,
   count: number,
 ): void {
+  const first = values[0]
+  if (first === undefined) return
   let col = Math.round(xScale(1))
-  let min = values[0]
-  let max = values[0]
+  let min = first
+  let max = first
   let started = false
   const emit = (x: number, lo: number, hi: number) => {
     const yLo = yScale(lo)
@@ -267,7 +271,7 @@ function decimatedPath(
   }
   for (let i = 1; i < count; i++) {
     const v = values[i]
-    if (!Number.isFinite(v)) continue
+    if (v === undefined || !Number.isFinite(v)) continue
     const x = Math.round(xScale(i + 1))
     if (x === col) {
       if (v < min) min = v
@@ -311,6 +315,7 @@ export function drawOffScaleMarkers(
   if (events.length === 0) return
   const area = plotArea(layout)
   const [d0, d1] = yScale.domain()
+  if (d0 === undefined || d1 === undefined) return
   const top = Math.max(d0, d1)
   ctx.save()
   ctx.font = style.font
