@@ -10,10 +10,19 @@ import {
   medianPush,
 } from './runningStats.ts'
 
+/* The midpoint rounded once, derived apart from the code under test. When
+   either value is at least 1 in magnitude, halve before adding: the sum
+   cannot overflow, the large value halves exactly, and any value too small
+   to halve exactly sits far below its last bit. Smaller pairs add first so
+   subnormal halves are not rounded twice. */
+function bruteMidpoint(a: number, b: number): number {
+  return Math.abs(a) >= 1 || Math.abs(b) >= 1 ? a / 2 + b / 2 : (a + b) / 2
+}
+
 function bruteMedian(values: number[]): number {
   const sorted = [...values].sort((a, b) => a - b)
   const mid = sorted.length >> 1
-  return sorted.length % 2 === 1 ? sorted[mid]! : (sorted[mid - 1]! + sorted[mid]!) / 2
+  return sorted.length % 2 === 1 ? sorted[mid]! : bruteMidpoint(sorted[mid - 1]!, sorted[mid]!)
 }
 
 describe('running median', () => {
@@ -54,6 +63,20 @@ describe('running median', () => {
         seen.push(value)
         expect(median(state)).toBe(bruteMedian(seen))
       }
+    }
+  })
+
+  it('keeps the midpoint finite at the edge of the double range', () => {
+    const max = Number.MAX_VALUE
+    for (const [pair, expected] of [
+      [[max, max], max],
+      [[-max, -max], -max],
+      [[max, -max], 0],
+      [[max, max / 2], 0.75 * max],
+    ] as const) {
+      const state = createRunningMedian()
+      for (const value of pair) medianPush(state, value)
+      expect(median(state)).toBe(expected)
     }
   })
 

@@ -33,11 +33,22 @@ export function median(state: RunningMedian): number {
   const upperCount = heapSize(state.upper)
   if (lowerCount + upperCount === 0) return NaN
   if (lowerCount === upperCount) {
-    return ((heapPeek(state.lower) as number) + (heapPeek(state.upper) as number)) / 2
+    return midpoint(heapPeek(state.lower) as number, heapPeek(state.upper) as number)
   }
   return lowerCount > upperCount
     ? (heapPeek(state.lower) as number)
     : (heapPeek(state.upper) as number)
+}
+
+/* (a + b) / 2 overflows to Infinity when both middle values sit near the
+   top of the double range. Only values that large can overflow the sum,
+   and halving them is exact, so the fallback still rounds the true
+   midpoint once. Infinite inputs keep the plain sum, which already gives
+   the IEEE answer. */
+function midpoint(a: number, b: number): number {
+  const sum = a + b
+  const overflowed = !Number.isFinite(sum) && Number.isFinite(a) && Number.isFinite(b)
+  return overflowed ? a / 2 + b / 2 : sum / 2
 }
 
 /* Incremental mean update instead of a raw sum: single Cauchy draws can be
