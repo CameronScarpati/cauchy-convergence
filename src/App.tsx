@@ -117,11 +117,8 @@ function App() {
       </main>
       <footer className="colophon">
         <p>
-          Built by <a href="https://github.com/CameronScarpati">Cameron Scarpati</a> as a
-          portfolio project. <a href="https://github.com/CameronScarpati/cauchy-convergence">
-            Source on GitHub
-          </a>
-          .
+          Built by <a href="https://github.com/CameronScarpati">Cameron Scarpati</a>.{' '}
+          <a href="https://github.com/CameronScarpati/cauchy-convergence">Source on GitHub</a>.
         </p>
         <p>
           Read more about the{' '}
