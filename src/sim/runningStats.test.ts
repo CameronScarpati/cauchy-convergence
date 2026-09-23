@@ -97,22 +97,54 @@ describe('running median', () => {
   })
 
   it('matches brute-force sorting on arbitrary doubles, signed zeros and infinities', () => {
-    const edge = fc.constantFrom(-0, 0, Infinity, -Infinity, Number.MAX_VALUE, -Number.MIN_VALUE)
-    // NaN is kept rare so most sequences check the ordering for a while
-    // before it arrives and turns every later median into NaN.
-    const sample = fc.oneof(
-      { arbitrary: fc.double(), weight: 20 },
-      { arbitrary: edge, weight: 20 },
-      { arbitrary: fc.constant(NaN), weight: 1 },
+    /* NaN is left out so that every comparison checks the ordering; the
+       next test covers it. Each edge value comes with its negation. Two
+       values of one sign from the top binade overflow when added, so
+       drawing from it on both sides makes the midpoint meet overflow
+       toward both infinities. */
+    const edge = fc.constantFrom(
+      -0,
+      0,
+      Infinity,
+      -Infinity,
+      Number.MAX_VALUE,
+      -Number.MAX_VALUE,
+      Number.MIN_VALUE,
+      -Number.MIN_VALUE,
     )
+    const topBinade = 2 ** 1023
+    const huge = fc.oneof(
+      fc.double({ min: topBinade, max: Number.MAX_VALUE, noNaN: true }),
+      fc.double({ min: -Number.MAX_VALUE, max: -topBinade, noNaN: true }),
+    )
+    const sample = fc.oneof(fc.double({ noNaN: true }), edge, huge)
     fc.assert(
       fc.property(fc.array(sample, { maxLength: 60, size: 'max' }), (sequence) => {
         const state = createRunningMedian()
         sequence.forEach((value, i) => {
           medianPush(state, value)
-          // + 0 folds -0 into +0: the two zeros tie, so either may sit in the middle.
+          /* + 0 folds -0 into +0: the two zeros tie, so either may sit in
+             the middle. */
           expect(median(state) + 0).toBe(bruteMedian(sequence.slice(0, i + 1)) + 0)
         })
+      }),
+      { seed: 42 },
+    )
+  })
+
+  it('stays NaN from the first NaN on, whatever comes before or after it', () => {
+    const before = fc.array(fc.double({ noNaN: true }), { maxLength: 20 })
+    const after = fc.array(fc.double(), { maxLength: 20 })
+    fc.assert(
+      fc.property(before, after, (head, tail) => {
+        const state = createRunningMedian()
+        for (const value of head) medianPush(state, value)
+        medianPush(state, NaN)
+        expect(median(state)).toBeNaN()
+        for (const value of tail) {
+          medianPush(state, value)
+          expect(median(state)).toBeNaN()
+        }
       }),
       { seed: 42 },
     )
