@@ -150,9 +150,10 @@ export function Controls({
           max={SPEED_STOPS.length - 1}
           step={1}
           value={speedIndex === -1 ? 3 : speedIndex}
-          onChange={(event) =>
-            onChange({ samplesPerSecond: SPEED_STOPS[Number(event.target.value)] })
-          }
+          onChange={(event) => {
+            const next = SPEED_STOPS[Number(event.target.value)]
+            if (next !== undefined) onChange({ samplesPerSecond: next })
+          }}
         />
       </motion.label>
 
