@@ -69,4 +69,38 @@ describe('binary heap', () => {
       { seed: 42 },
     )
   })
+
+  it('only hands the comparator values that are stored in the heap', () => {
+    // Reading past the end of the array must never reach the comparator:
+    // slot() throws on it, and without that check a - b would hide the
+    // undefined as NaN where a keyed or bitwise comparator would not. Popping
+    // from sizes 3 and 2 leaves 2 and 1 entries, so the root's right and then
+    // left child index lands exactly on the array length.
+    const stored = [4, 9, 1, 7, 3]
+    const seen: number[] = []
+    const heap = createHeap((a, b) => {
+      seen.push(a, b)
+      return a - b
+    })
+    for (const v of stored) heapPush(heap, v)
+    const popped: number[] = []
+    for (let v = heapPop(heap); v !== undefined; v = heapPop(heap)) popped.push(v)
+    expect(popped).toEqual([1, 3, 4, 7, 9])
+    expect(seen.filter((v) => !stored.includes(v))).toEqual([])
+  })
+
+  it('never swaps entries whose priorities tie', () => {
+    // Ordering by integer part makes 1.1 to 1.4 all tie, so neither sift
+    // ever finds a strict improvement: pushes keep insertion order and each
+    // pop returns the root and moves the last entry into its place.
+    // Array states: [1.1, 1.2, 1.3, 1.4] -> [1.4, 1.2, 1.3] -> [1.3, 1.2] -> [1.2].
+    const heap = createHeap((a, b) => Math.floor(a) - Math.floor(b))
+    for (const v of [1.1, 1.2, 1.3, 1.4]) {
+      heapPush(heap, v)
+      expect(heapPeek(heap)).toBe(1.1)
+    }
+    const popped: number[] = []
+    for (let v = heapPop(heap); v !== undefined; v = heapPop(heap)) popped.push(v)
+    expect(popped).toEqual([1.1, 1.4, 1.3, 1.2])
+  })
 })
