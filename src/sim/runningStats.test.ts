@@ -81,6 +81,24 @@ describe('running median', () => {
     }
   })
 
+  it('gives the IEEE midpoint when a middle value is infinite', () => {
+    /* toBe compares with Object.is, so the NaN row matches only NaN. */
+    const max = Number.MAX_VALUE
+    for (const [pair, expected] of [
+      [[-Infinity, Infinity], NaN],
+      [[Infinity, Infinity], Infinity],
+      [[-Infinity, -Infinity], -Infinity],
+      [[max, Infinity], Infinity],
+      [[-Infinity, -max], -Infinity],
+    ] as const) {
+      for (const values of [pair, [...pair].reverse()]) {
+        const state = createRunningMedian()
+        for (const value of values) medianPush(state, value)
+        expect(median(state)).toBe(expected)
+      }
+    }
+  })
+
   it('becomes NaN once a NaN is pushed, wherever it arrives, and stays NaN', () => {
     for (const values of [
       [NaN, 1, 2, 3, 4],
