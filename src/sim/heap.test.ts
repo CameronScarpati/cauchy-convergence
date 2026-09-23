@@ -57,8 +57,9 @@ describe('binary heap', () => {
   })
 
   it('agrees with a sorted-array model on arbitrary push and pop sequences', () => {
-    // null is a pop. === lets the tied zeros -0 and +0 come out in either order.
-    // NaN pushes must throw and leave both the heap and the model unchanged.
+    /* null is a pop. === lets the tied zeros -0 and +0 come out in either
+       order. NaN pushes must throw and leave both the heap and the model
+       unchanged. */
     const value = fc.oneof(fc.double(), fc.constantFrom(-0, 0, Infinity, -Infinity, NaN))
     const ops = fc.array(fc.option(value, { nil: null, freq: 3 }), { maxLength: 100, size: 'max' })
     fc.assert(
@@ -84,11 +85,11 @@ describe('binary heap', () => {
   })
 
   it('only hands the comparator values that are stored in the heap', () => {
-    // Reading past the end of the array must never reach the comparator:
-    // slot() throws on it, and without that check a - b would hide the
-    // undefined as NaN where a keyed or bitwise comparator would not. Popping
-    // from sizes 3 and 2 leaves 2 and 1 entries, so the root's right and then
-    // left child index lands exactly on the array length.
+    /* Reading past the end of the array must never reach the comparator:
+       slot() throws on it, and without that check a - b would hide the
+       undefined as NaN where a keyed or bitwise comparator would not.
+       Popping from sizes 3 and 2 leaves 2 and 1 entries, so the root's
+       right and then left child index lands exactly on the array length. */
     const stored = [4, 9, 1, 7, 3]
     const seen: number[] = []
     const heap = createHeap((a, b) => {

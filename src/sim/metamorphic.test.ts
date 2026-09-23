@@ -86,7 +86,8 @@ describe('metamorphic relations', () => {
   it('median is invariant under permutation and exactly odd under negation', () => {
     const rng = mulberry32(8)
     const draws = Array.from({ length: 300 }, () => cauchySample(rng, 0, 1))
-    const values = [...draws, ...draws.slice(0, 101)] // duplicates exercise tie handling
+    /* Duplicates exercise tie handling. */
+    const values = [...draws, ...draws.slice(0, 101)]
     for (const multiset of [values, values.slice(0, 400)]) {
       const expected = medianOf(multiset)
       for (let k = 0; k < 20; k++) {
@@ -103,7 +104,8 @@ describe('metamorphic relations', () => {
       const recorded: ReturnType<typeof readout>[] = []
       feed(sample, 3000, (acc) => recorded.push(readout(acc)))
       for (const n1 of [1, 2, 999, 1000, 2999]) {
-        // The fresh run is read once at the end; the long run was read every step.
+        /* The fresh run is read once at the end; the long run was read
+           every step. */
         expect(readout(feed(sample, n1))).toEqual(recorded[n1 - 1])
       }
     }
