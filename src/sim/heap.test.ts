@@ -102,18 +102,57 @@ describe('binary heap', () => {
     expect(seen.filter((v) => !stored.includes(v))).toEqual([])
   })
 
-  it('never swaps entries whose priorities tie', () => {
-    // Ordering by integer part makes 1.1 to 1.4 all tie, so neither sift
-    // ever finds a strict improvement: pushes keep insertion order and each
-    // pop returns the root and moves the last entry into its place.
-    // Array states: [1.1, 1.2, 1.3, 1.4] -> [1.4, 1.2, 1.3] -> [1.3, 1.2] -> [1.2].
-    const heap = createHeap((a, b) => Math.floor(a) - Math.floor(b))
-    for (const v of [1.1, 1.2, 1.3, 1.4]) {
-      heapPush(heap, v)
-      expect(heapPeek(heap)).toBe(1.1)
-    }
-    const popped: number[] = []
-    for (let v = heapPop(heap); v !== undefined; v = heapPop(heap)) popped.push(v)
-    expect(popped).toEqual([1.1, 1.4, 1.3, 1.2])
+  it('keeps heap order and every entry when priorities tie', () => {
+    /* Either of two tied entries may come out first, so this checks only
+       what callers rely on: the backing array stays in heap order, each
+       pop returns an entry that no remaining entry precedes, and the
+       entries that come out are the ones that went in. Ordering by integer
+       part makes many values tie, and a - b ties -0 with +0; Object.is
+       tells the two zeros apart in the model. null is a pop. */
+    const comparators = [
+      (a: number, b: number) => a - b,
+      (a: number, b: number) => Math.floor(a) - Math.floor(b),
+    ]
+    const value = fc.constantFrom(-0, 0, 0.5, 1.1, 1.2, 1.9, 2, 2.5, -1.5)
+    const ops = fc.array(fc.option(value, { nil: null, freq: 4 }), { maxLength: 60, size: 'max' })
+    fc.assert(
+      fc.property(fc.constantFrom(...comparators), ops, (compare, sequence) => {
+        const heap = createHeap(compare)
+        const model: number[] = []
+        const popAndCheck = () => {
+          const top = heapPop(heap)
+          if (top === undefined) {
+            expect(model).toEqual([])
+            return
+          }
+          const at = model.findIndex((v) => Object.is(v, top))
+          expect(at).not.toBe(-1)
+          model.splice(at, 1)
+          for (const rest of model) expect(compare(top, rest)).toBeLessThanOrEqual(0)
+        }
+        const checkOrder = () => {
+          const { items } = heap
+          expect(items.length).toBe(model.length)
+          for (let i = 1; i < items.length; i++) {
+            expect(compare(items[(i - 1) >> 1]!, items[i]!)).toBeLessThanOrEqual(0)
+          }
+        }
+        for (const op of sequence) {
+          if (op === null) {
+            popAndCheck()
+          } else {
+            heapPush(heap, op)
+            model.push(op)
+          }
+          checkOrder()
+        }
+        while (model.length > 0) {
+          popAndCheck()
+          checkOrder()
+        }
+        expect(heapPop(heap)).toBeUndefined()
+      }),
+      { seed: 42 },
+    )
   })
 })
