@@ -4,7 +4,9 @@
 
 An interactive look at a distribution that breaks a rule most people take for granted: the average of many samples does not always settle down.
 
-![The demo in light mode. One Cauchy draw of -2200 knocks the running mean off the chart, and thousands of samples later it still has not recovered, while the running median stays locked on the location line.](docs/hero-light.png)
+Try it live at [cauchy-convergence.netlify.app](https://cauchy-convergence.netlify.app/).
+
+![The demo in light mode. Two Cauchy draws near sample 580, -2200 and then -4836, fly off the chart and knock the running mean down to about -12, and thousands of samples later it still has not recovered, while the running median stays locked on the location line.](docs/hero-light.png)
 
 ## What it shows
 
@@ -29,11 +31,11 @@ npm install
 npm run dev
 ```
 
-npm run build type-checks and produces the static site in dist. npm run test runs the unit tests for the sampling, running statistics, and scale modules.
+npm run build type-checks and produces the static site in dist. npm run test runs the unit tests for the seeded generator, sampling, heap, running statistics, scale, preset, and theme modules.
 
 ## How it is built
 
-React, Vite, and TypeScript. The chart is drawn on a canvas with a requestAnimationFrame loop for smooth streaming. D3 is used only for scales and axes. Randomness comes from a small seeded generator so runs are reproducible. Math is typeset with KaTeX.
+React, Vite, and TypeScript. The chart is drawn on canvas with a requestAnimationFrame loop for smooth streaming. D3 is used only for scales and line paths. Randomness comes from a small seeded generator so runs are reproducible. Math is typeset with KaTeX.
 
 ## Notes
 
@@ -41,7 +43,7 @@ This is a teaching demo, not a research tool. Single Cauchy draws can be astrono
 
 ## Credits
 
-Built by [Cameron Scarpati](https://github.com/CameronScarpati) as a portfolio project. To go deeper, start with the [Cauchy distribution](https://en.wikipedia.org/wiki/Cauchy_distribution) and the [Law of Large Numbers](https://en.wikipedia.org/wiki/Law_of_large_numbers).
+Built by [Cameron Scarpati](https://github.com/CameronScarpati). To go deeper, start with the [Cauchy distribution](https://en.wikipedia.org/wiki/Cauchy_distribution) and the [Law of Large Numbers](https://en.wikipedia.org/wiki/Law_of_large_numbers).
 
 ## License
 
