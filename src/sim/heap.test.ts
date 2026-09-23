@@ -1,3 +1,4 @@
+import fc from 'fast-check'
 import { describe, expect, it } from 'vitest'
 import { createHeap, heapPeek, heapPop, heapPush, heapSize } from './heap.ts'
 import { mulberry32 } from './prng.ts'
@@ -43,5 +44,29 @@ describe('binary heap', () => {
     popped.items[0] = 5
     popped.items[3] = 2
     expect(() => heapPop(popped)).toThrow('Heap slot 1 of 3 is empty')
+  })
+
+  it('agrees with a sorted-array model on arbitrary push and pop sequences', () => {
+    // null is a pop. === lets the tied zeros -0 and +0 come out in either order.
+    const value = fc.oneof(fc.double({ noNaN: true }), fc.constantFrom(-0, 0, Infinity, -Infinity))
+    const ops = fc.array(fc.option(value, { nil: null, freq: 3 }), { maxLength: 100, size: 'max' })
+    fc.assert(
+      fc.property(ops, (sequence) => {
+        const heap = createHeap((a, b) => a - b)
+        const model: number[] = []
+        for (const op of sequence) {
+          if (op === null) {
+            expect(heapPop(heap) === model.shift()).toBe(true)
+          } else {
+            heapPush(heap, op)
+            model.push(op)
+            model.sort((a, b) => a - b)
+          }
+          expect(heapSize(heap)).toBe(model.length)
+          expect(heapPeek(heap) === model[0]).toBe(true)
+        }
+      }),
+      { seed: 42 },
+    )
   })
 })

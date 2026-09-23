@@ -1,3 +1,4 @@
+import fc from 'fast-check'
 import { describe, expect, it } from 'vitest'
 import { mulberry32 } from './prng.ts'
 import {
@@ -54,6 +55,22 @@ describe('running median', () => {
         expect(median(state)).toBe(bruteMedian(seen))
       }
     }
+  })
+
+  it('matches brute-force sorting on arbitrary doubles, signed zeros and infinities', () => {
+    const edge = fc.constantFrom(-0, 0, Infinity, -Infinity, Number.MAX_VALUE, -Number.MIN_VALUE)
+    const sample = fc.oneof(fc.double({ noNaN: true }), edge)
+    fc.assert(
+      fc.property(fc.array(sample, { maxLength: 60, size: 'max' }), (sequence) => {
+        const state = createRunningMedian()
+        sequence.forEach((value, i) => {
+          medianPush(state, value)
+          // + 0 folds -0 into +0: the two zeros tie, so either may sit in the middle.
+          expect(median(state) + 0).toBe(bruteMedian(sequence.slice(0, i + 1)) + 0)
+        })
+      }),
+      { seed: 42 },
+    )
   })
 })
 
