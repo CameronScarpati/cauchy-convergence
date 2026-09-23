@@ -48,7 +48,7 @@ export interface Preset {
 export const PRESETS: Preset[] = [
   {
     label: 'One bad draw',
-    note: 'Two extreme Cauchy draws near sample 580 drag the running mean down to about -12, and thousands of samples later it has still not returned to the location line.',
+    note: 'One draw of about -2200 near sample 580 knocks the running mean off the location line, a second soon after drags it to about -12, and thousands of samples later it has still not returned.',
     config: {
       distribution: 'cauchy',
       location: 0,
