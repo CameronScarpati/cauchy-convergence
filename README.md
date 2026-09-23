@@ -39,7 +39,7 @@ React, Vite, and TypeScript. The chart is drawn on canvas with a requestAnimatio
 
 ## Notes
 
-This is a teaching demo, not a research tool. Single Cauchy draws can be astronomically large, so the vertical axis uses a symmetric-log scale by default and marks values that fly off the chart rather than hiding them. The seeded generator is fine for a visualization but is not cryptographically secure.
+This is a teaching demo, not a statistics library. Single Cauchy draws can be astronomically large, so the vertical axis uses a symmetric-log scale by default and marks values that fly off the chart rather than hiding them. The seeded generator is fine for a visualization but is not cryptographically secure.
 
 ## Credits
 
