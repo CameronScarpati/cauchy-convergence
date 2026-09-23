@@ -23,8 +23,8 @@ export function heapPush(heap: Heap, value: number): void {
   let i = items.length - 1
   while (i > 0) {
     const parent = (i - 1) >> 1
-    if (compare(items[i], items[parent]) >= 0) break
-    ;[items[i], items[parent]] = [items[parent], items[i]]
+    if (compare(slot(items, i), slot(items, parent)) >= 0) break
+    swap(items, i, parent)
     i = parent
   }
 }
@@ -36,16 +36,34 @@ export function heapPop(heap: Heap): number | undefined {
   const last = items.pop() as number
   if (items.length === 0) return top
   items[0] = last
+  const size = items.length
   let i = 0
   for (;;) {
     const left = 2 * i + 1
     const right = left + 1
     let smallest = i
-    if (left < items.length && compare(items[left], items[smallest]) < 0) smallest = left
-    if (right < items.length && compare(items[right], items[smallest]) < 0) smallest = right
+    if (left < size && compare(slot(items, left), slot(items, smallest)) < 0) smallest = left
+    if (right < size && compare(slot(items, right), slot(items, smallest)) < 0) smallest = right
     if (smallest === i) break
-    ;[items[i], items[smallest]] = [items[smallest], items[i]]
+    swap(items, i, smallest)
     i = smallest
   }
   return top
+}
+
+/* Every index passed here is already bounded by items.length, so a missing
+   value means the backing array was corrupted; fail loudly instead of
+   letting undefined flow into compare and scramble the heap order. */
+function slot(items: number[], index: number): number {
+  const value = items[index]
+  if (value === undefined) {
+    throw new Error(`Heap slot ${index} of ${items.length} is empty`)
+  }
+  return value
+}
+
+function swap(items: number[], a: number, b: number): void {
+  const held = slot(items, a)
+  items[a] = slot(items, b)
+  items[b] = held
 }

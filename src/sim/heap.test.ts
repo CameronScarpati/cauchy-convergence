@@ -32,4 +32,16 @@ describe('binary heap', () => {
     expect(heapPop(heap)).toBe(1)
     expect(heapSize(heap)).toBe(1)
   })
+
+  it('throws on a backing array with empty slots instead of sifting undefined', () => {
+    const pushed = createHeap((a, b) => a - b)
+    pushed.items.length = 3
+    expect(() => heapPush(pushed, 1)).toThrow('Heap slot 1 of 4 is empty')
+
+    const popped = createHeap((a, b) => a - b)
+    popped.items.length = 4
+    popped.items[0] = 5
+    popped.items[3] = 2
+    expect(() => heapPop(popped)).toThrow('Heap slot 1 of 3 is empty')
+  })
 })
