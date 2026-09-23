@@ -62,6 +62,9 @@ export function makeYScale(
 
 export function isOffScale(scale: NumericScale, value: number): boolean {
   const [d0, d1] = scale.domain()
+  if (d0 === undefined || d1 === undefined) {
+    throw new Error('Scale domain needs two endpoints to test a value against')
+  }
   return value < Math.min(d0, d1) || value > Math.max(d0, d1)
 }
 
