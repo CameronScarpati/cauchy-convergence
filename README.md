@@ -6,7 +6,7 @@ An interactive look at a distribution that breaks a rule most people take for gr
 
 Try it live at [cauchy-convergence.netlify.app](https://cauchy-convergence.netlify.app/).
 
-![The demo in light mode. Two Cauchy draws near sample 580, -2200 and then -4836, fly off the chart and knock the running mean down to about -12, and thousands of samples later it still has not recovered, while the running median stays locked on the location line.](docs/hero-light.png)
+![The demo in light mode. Two Cauchy draws near sample 580, the first labelled -2200, fly off the chart and knock the running mean down to about -12, and thousands of samples later it still has not recovered, while the running median stays locked on the location line. Two later upward draws are marked at the top edge.](docs/hero-light.png)
 
 ## What it shows
 
