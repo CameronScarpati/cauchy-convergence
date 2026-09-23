@@ -22,7 +22,7 @@ The Cauchy distribution has no defined mean or variance, so the Law of Large Num
 
 ## Using it
 
-Three classroom presets cue up the core stories in one click: one bad draw, averaging buys nothing, and the law holds here. Pause freezes a run mid-flight so a moment can be discussed, and Resume picks it back up. Toggle between Cauchy and Normal. Adjust the location and scale. Change the animation speed. Restart replays the current seed from sample one, Reseed picks a fresh seed, and typing a seed into the box reproduces a run exactly. Switch the vertical axis between symmetric log and clipped linear, where off-scale values are pinned to the edge and annotated with their actual size. Turn on multiple overlaid runs to confirm the mean's wandering is not a one-off. A button in the header switches light and dark themes. Finished runs pause briefly and then replay the same seed, so the chart keeps moving while you read.
+Three classroom presets cue up the core stories in one click: one bad draw, averaging buys nothing, and the law holds here. Pause freezes a run mid-flight so a moment can be discussed, and Resume picks it back up. Toggle between Cauchy and Normal. Adjust the location and scale. Change the animation speed. Restart replays the current seed from sample one, Reseed picks a fresh seed, and typing a seed into the box reproduces a run exactly. Switch the vertical axis between symmetric log and clipped linear. Either way, off-scale values are pinned to the edge and marked with an arrow, labelled with their actual size where there is room, and the five most recent keep their arrows. Turn on multiple overlaid runs to confirm the mean's wandering is not a one-off; the other runs are drawn faintly behind the first, which alone carries the markers. A button in the header switches light and dark themes. Finished runs pause briefly and then replay the same seed, so the chart keeps moving while you read.
 
 ## Running locally
 
@@ -35,11 +35,11 @@ npm run build type-checks and produces the static site in dist. npm run test run
 
 ## How it is built
 
-React, Vite, and TypeScript. The chart is drawn on canvas with a requestAnimationFrame loop for smooth streaming. D3 is used only for scales and line paths. Randomness comes from a small seeded generator so runs are reproducible. Math is typeset with KaTeX.
+React, Vite, and TypeScript. The chart is drawn on canvas by a requestAnimationFrame loop that feeds in samples at the chosen speed. D3 is used only for scales and line paths. Randomness comes from a small seeded generator so runs are reproducible. Math is typeset with KaTeX.
 
 ## Notes
 
-This is a teaching demo, not a statistics library. Single Cauchy draws can be astronomically large, so the vertical axis uses a symmetric-log scale by default and marks values that fly off the chart rather than hiding them. The seeded generator is fine for a visualization but is not cryptographically secure.
+This is a teaching demo, not a statistics library. Single Cauchy draws can be astronomically large, so the vertical axis uses a symmetric-log scale by default and marks the latest values that fly off the chart rather than hiding them. The seeded generator is fine for a visualization but is not cryptographically secure.
 
 ## Credits
 
